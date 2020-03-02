@@ -13,7 +13,7 @@ async function run() {
             INSERT INTO users (email, display_name, hash)
             VALUES ($1, $2, $3);
             `,
-        ['me@mydomain.com', 'Someone', 'gh289t894ht']);
+        ['me@mydomain.com', 'User Name', 'gh289t894ht']);
 
         await Promise.all(
             dmc_colors.map(color => {
