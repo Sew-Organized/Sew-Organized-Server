@@ -22,7 +22,6 @@ app.use(express.urlencoded({ extended: true }));
 // *** AUTH ***
 const createAuthRoutes = require('./lib/auth/create-auth-routes');
 
-
 const authRoutes = createAuthRoutes({
     selectUser(email) {
         return client.query(`
@@ -47,4 +46,55 @@ app.use('/api/auth', authRoutes);
 
 const ensureAuth = require('./lib/auth/ensure-auth');
 
-app.use('/api/me', ensureAuth);
+//keep /username for now to direct ensure Auth doesn't mess with development. Come back to update. 
+app.use('/api/username', ensureAuth);
+
+//** ENDPOINTS **// 
+
+//get dmc colors from database
+app.get('/api/colors', async(req, res) => {
+    try {
+        const myQuery = `
+            SELECT * 
+            FROM dmc_colors  
+        `;
+
+        const colors = await client.query(myQuery);
+        res.json(colors.rows);
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
+
+//get user stash
+//'username is placeholder'
+app.get('/api/username/stash', async(req, res) => {
+    try {
+        const myQuery = `
+            SELECT stash.*
+            FROM stash
+            WHERE user_id = $1 
+            JOIN dmc_colors
+            ON stash.dmc_id = dmc_colors.id
+        `;
+        
+        const stash = await client.query(myQuery, [req.userId]);
+        res.json(stash.rows);
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
+
+//get route from Color API schemes 
+
+//get route for palettes
+//post route for palettes
+//delete route to delete palattes
+
+
+//post route for stash
+//put route to update stash (quantity, partial)
+//delete route to delete stash items 
+

@@ -8,8 +8,11 @@ async function run() {
         await client.connect();
     
         await client.query(`
+        DROP TABLE IF EXISTS palettes;
+        DROP TABLE IF EXISTS stash;
+        DROP TABLE IF EXISTS users;
         DROP TABLE IF EXISTS dmc_colors;
-        DROP TABLE IF EXISTS users;`
+        `
         );
 
         console.log('drop tables complete');
