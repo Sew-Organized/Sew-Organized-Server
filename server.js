@@ -1,53 +1,47 @@
 // Load Environment Variables from the .env file
 require('dotenv').config();
-
 // Application Dependencies
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const client = require('./lib/client');
 const request = require('superagent');
-
+// Database Client
+const client = require('./lib/client');
+// Services
+// Auth
+const ensureAuth = require('./lib/auth/ensure-auth');
+const createAuthRoutes = require('./lib/auth/create-auth-routes');
+const authRoutes = createAuthRoutes({
+    async selectUser(email) {
+        const result = await client.query(`
+            SELECT id, email, hash, display_name AS "displayName" 
+            FROM users
+            WHERE email = $1;
+        `, [email]);
+        return result.rows[0];
+    },
+    async insertUser(user, hash) {
+        console.log(user);
+        const result = await client.query(`
+            INSERT into users (email, hash, display_name)
+            VALUES ($1, $2, $3)
+            RETURNING id, email, display_name AS "displayName"
+        `, [user.email, hash, user.displayName]);
+        return result.rows[0];
+    }
+});
 // Application Setup
 const app = express();
 const PORT = process.env.PORT;
-app.use(morgan('dev'));
-app.use(cors());
-app.use(express.static('public'));
-
-// API Routes
-app.use(express.json());
+app.use(morgan('dev')); // http logging
+app.use(cors()); // enable CORS request
+app.use(express.static('public')); // server files from /public folder
+app.use(express.json()); // enable reading incoming json data
 app.use(express.urlencoded({ extended: true }));
-
-// *** AUTH ***
-const createAuthRoutes = require('./lib/auth/create-auth-routes');
-
-const authRoutes = createAuthRoutes({
-    selectUser(email) {
-        return client.query(`
-        SELECT id, hash, display_name as "displayName"
-        FROM users
-        WHERE email = $1;`,
-        [email]
-        ).then(result => result.rows[0]);
-    },
-    insertUser(user, hash) {
-        return client.query(`
-        INSERT into users (email, hash, display_name)
-        VALUES ($1, $2, $3)
-        RETURNING id, email, display_name;
-        `,
-        [user.email, hash, user.display_name]
-        ).then(result => result.rows[0]);
-    }
-});
-
+// setup authentication routes
 app.use('/api/auth', authRoutes);
-
-const ensureAuth = require('./lib/auth/ensure-auth');
-
-//keep /username for now to direct ensure Auth doesn't mess with development. Come back to update. 
-app.use('/api/username', ensureAuth);
+// everything that starts with "/api" below here requires an auth token!
+app.use('/api', ensureAuth);
 
 //** ENDPOINTS **// 
 
@@ -72,11 +66,11 @@ app.get('/api/colors', async(req, res) => {
 app.get('/api/username/stash', async(req, res) => {
     try {
         const myQuery = `
-            SELECT stash.*
+            SELECT stash.*, dmc_colors.description
             FROM stash
-            WHERE user_id = $1 
             JOIN dmc_colors
             ON stash.dmc_id = dmc_colors.id
+            WHERE user_id = $1 
         `;
         
         const stash = await client.query(myQuery, [req.userId]);
@@ -87,14 +81,78 @@ app.get('/api/username/stash', async(req, res) => {
     }
 });
 
+//post route for stash
+app.post('/api/username/stash', async(req, res) => {
+    try {
+        const {
+            dmcId,
+            quantity, 
+            partial
+        } = req.body;
+
+        const newStash = await client.query(`
+            INSERT INTO stash (dmc_id, quantity, partial, user_id)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `,
+        [dmcId, quantity, partial, req.userId]);
+        res.json(newStash.rows[0]);
+    }
+    catch (err) {
+        console.error(err);
+    } 
+});
+
+//put route to update stash (quantity, partial)
+app.put('/api/username/stash/:id', async(req, res) => {
+    try {
+        const {
+            quantity,
+            partial
+        } = req.body;
+
+        const result = await client.query(`
+            UPDATE stash 
+            SET quantity = $1, partial = $2
+            WHERE id = ${req.params.id}
+                AND user_id = $3
+            RETURNING *
+        `,
+        [quantity, partial, req.userId]);
+        res.json(result.rows[0]);
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
+
+//delete route to delete stash items 
+app.delete('/api/username/stash/:id', async(req, res) => {
+    try {
+        const result = await client.query(`
+            DELETE from stash 
+            WHERE id = ${req.params.id}
+                AND user_id = $1
+            RETURNING *
+        `,
+        [req.userId]);
+        res.json(result.rows[0]);
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
+
+
 //get route from Color API schemes 
+
 
 //get route for palettes
 //post route for palettes
 //delete route to delete palattes
 
 
-//post route for stash
-//put route to update stash (quantity, partial)
-//delete route to delete stash items 
 
+app.listen(PORT, () => {
+    console.log('server running on PORT', PORT);
+});
