@@ -22,7 +22,6 @@ app.use(express.urlencoded({ extended: true }));
 // *** AUTH ***
 const createAuthRoutes = require('./lib/auth/create-auth-routes');
 
-
 const authRoutes = createAuthRoutes({
     selectUser(email) {
         return client.query(`
@@ -47,4 +46,8 @@ app.use('/api/auth', authRoutes);
 
 const ensureAuth = require('./lib/auth/ensure-auth');
 
-app.use('/api/me', ensureAuth);
+//keep /username for now to direct ensure Auth doesn't mess with development. Come back to update. 
+app.use('/api/username', ensureAuth);
+
+//get dmc colors from database
+app.get()

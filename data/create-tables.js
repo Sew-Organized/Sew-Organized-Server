@@ -19,14 +19,24 @@ async function run() {
             );
             
             CREATE TABLE dmc_colors (
-                id VARCHAR(256) NOT NULL,
+                id VARCHAR(256) PRIMARY KEY,
                 description VARCHAR(256) NOT NULL,
                 red INTEGER NOT NULL,
                 green INTEGER NOT NULL,
                 blue INTEGER NOT NULL,
                 hex VARCHAR(256) NOT NULL
-            );           
+            );
+            
+            CREATE TABLE stash (
+                id SERIAL PRIMARY KEY,
+                dmc_id VARCHAR(256) NOT NULL REFERENCES dmc_colors(id),
+                quantity INTEGER NOT NUll, 
+                partial BOOLEAN NOT NULL, 
+                user_id INTEGER NOT NULL REFERENCES users(id)
+            );
         `);
+        
+        //STRETCH Add to buy (add to shopping list) to STASH table. Add scheme table as well. 
 
         console.log('create tables complete');
     }
