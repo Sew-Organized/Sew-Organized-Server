@@ -34,6 +34,17 @@ async function run() {
                 partial BOOLEAN NOT NULL, 
                 user_id INTEGER NOT NULL REFERENCES users(id)
             );
+
+            CREATE TABLE palettes (
+                id SERIAL PRIMARY KEY, 
+                palette_name VARCHAR(256) NOT NULL,
+                dmc_one VARCHAR(256) NOT NULL, 
+                dmc_two VARCHAR(256) NOT NULL,
+                dmc_three VARCHAR(256) NOT NULL,
+                dmc_four VARCHAR(256) NOT NULL,
+                dmc_five VARCHAR(256) NOT NULL,
+                user_id INTEGER NOT NULL REFERENCES users(id) 
+            );
         `);
         
         //STRETCH Add to buy (add to shopping list) to STASH table. Add scheme table as well. 
