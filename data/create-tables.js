@@ -19,13 +19,12 @@ async function run() {
             );
             
             CREATE TABLE dmc_colors (
-                id INTEGER NOT NULL,
+                id VARCHAR(256) NOT NULL,
                 description VARCHAR(256) NOT NULL,
                 red INTEGER NOT NULL,
                 green INTEGER NOT NULL,
                 blue INTEGER NOT NULL,
-                hex VARCHAR(256) NOT NULL,
-                user_id INTEGER NOT NULL REFERENCES users(id)
+                hex VARCHAR(256) NOT NULL
             );           
         `);
 

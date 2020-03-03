@@ -9,8 +9,8 @@ async function run() {
     
         await client.query(`
         DROP TABLE IF EXISTS dmc_colors;
-        DROP TABLE ID EXISTS users;
-        `);
+        DROP TABLE IF EXISTS users;`
+        );
 
         console.log('drop tables complete');
     }
