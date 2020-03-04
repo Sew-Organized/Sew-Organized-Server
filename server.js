@@ -41,7 +41,7 @@ app.use(express.urlencoded({ extended: true }));
 // setup authentication routes
 app.use('/api/auth', authRoutes);
 // everything that starts with "/api" below here requires an auth token!
-app.use('/api', ensureAuth);
+app.use('/api/username', ensureAuth);
 
 //** ENDPOINTS **// 
 
@@ -66,7 +66,7 @@ app.get('/api/colors', async(req, res) => {
 app.get('/api/username/stash', async(req, res) => {
     try {
         const myQuery = `
-            SELECT stash.*, dmc_colors.description
+            SELECT stash.*, dmc_colors.description, dmc_colors.hex
             FROM stash
             JOIN dmc_colors
             ON stash.dmc_id = dmc_colors.id
@@ -144,13 +144,96 @@ app.delete('/api/username/stash/:id', async(req, res) => {
 });
 
 
-//get route from Color API schemes 
 
+const getSchemeColors = async() => {
+    const randomHex = Math.floor(Math.random() * 16777215).toString(16);
+    const URL = `https://www.thecolorapi.com/scheme?hex=${randomHex}&mode=analogic-complement&count=5&format=json`;
+
+    const colorSchemeData = await request.get(URL);
+
+    return colorSchemeData.body.colors.map(color => {
+        return {
+            r: color.rgb.r,
+            g: color.rgb.g,
+            b: color.rgb.b
+        };
+    });
+};
+
+
+
+//get route from Color API schemes 
+app.get('/api/scheme', async(req, res) => {
+    try {
+        const data = await getSchemeColors();
+        
+        res.json(data);
+        console.log(data);
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
 
 //get route for palettes
-//post route for palettes
-//delete route to delete palattes
+app.get('/api/username/palettes', async(req, res) => {
+    try {
+        const myQuery = `
+            SELECT *
+            FROM palettes
+            WHERE user_id = $1 
+        `;
+        
+        const stash = await client.query(myQuery, [req.userId]);
+        res.json(stash.rows);
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
 
+
+//post route for palettes
+app.post('/api/username/palettes', async(req, res) => {
+    try {
+        const {
+            paletteName,
+            dmcOne,
+            dmcTwo,
+            dmcThree,
+            dmcFour,
+            dmcFive
+        } = req.body;
+
+        const newPalette = await client.query(`
+            INSERT INTO palettes (palette_name, dmc_one, dmc_two, dmc_three, dmc_four, dmc_five, user_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING *
+        `,
+        [paletteName, dmcOne, dmcTwo, dmcThree, dmcFour, dmcFive, req.userId]);
+        res.json(newPalette.rows[0]);
+    }
+    catch (err) {
+        console.error(err);
+    } 
+});
+
+//delete route to delete palettes
+app.delete('/api/username/palettes/:id', async(req, res) => {
+    try {
+        const result = await client.query(`
+            DELETE from palettes 
+            WHERE id = ${req.params.id}
+                AND user_id = $1
+            RETURNING *
+        `,
+        [req.userId]);
+        res.json(result.rows[0]);
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
 
 
 app.listen(PORT, () => {
