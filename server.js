@@ -87,15 +87,14 @@ app.post('/api/username/stash', async(req, res) => {
         const {
             dmcId,
             quantity, 
-            partial
         } = req.body;
 
         const newStash = await client.query(`
-            INSERT INTO stash (dmc_id, quantity, partial, user_id)
+            INSERT INTO stash (dmc_id, quantity, user_id)
             VALUES ($1, $2, $3, $4)
             RETURNING *
         `,
-        [dmcId, quantity, partial, req.userId]);
+        [dmcId, quantity, req.userId]);
         res.json(newStash.rows[0]);
     }
     catch (err) {
@@ -103,22 +102,21 @@ app.post('/api/username/stash', async(req, res) => {
     } 
 });
 
-//put route to update stash (quantity, partial)
+//put route to update stash (quantity)
 app.put('/api/username/stash/:id', async(req, res) => {
     try {
         const {
             quantity,
-            partial
         } = req.body;
 
         const result = await client.query(`
             UPDATE stash 
-            SET quantity = $1, partial = $2
+            SET quantity = $1
             WHERE id = ${req.params.id}
                 AND user_id = $3
             RETURNING *
         `,
-        [quantity, partial, req.userId]);
+        [quantity, req.userId]);
         res.json(result.rows[0]);
     }
     catch (err) {
