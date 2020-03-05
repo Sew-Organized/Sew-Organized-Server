@@ -113,7 +113,7 @@ app.put('/api/username/stash/:id', async(req, res) => {
             UPDATE stash 
             SET quantity = $1
             WHERE id = ${req.params.id}
-                AND user_id = $3
+                AND user_id = $2
             RETURNING *
         `,
         [quantity, req.userId]);
