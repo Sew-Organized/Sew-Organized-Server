@@ -91,7 +91,7 @@ app.post('/api/username/stash', async(req, res) => {
 
         const newStash = await client.query(`
             INSERT INTO stash (dmc_id, quantity, user_id)
-            VALUES ($1, $2, $3, $4)
+            VALUES ($1, $2, $3)
             RETURNING *
         `,
         [dmcId, quantity, req.userId]);

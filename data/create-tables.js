@@ -7,7 +7,7 @@ async function run() {
 
     try {
         // initiate connecting to db
-        await client.connect();
+        // await client.connect();
 
         // run a query to create tables
         await client.query(`
@@ -30,7 +30,7 @@ async function run() {
             CREATE TABLE stash (
                 id SERIAL PRIMARY KEY,
                 dmc_id VARCHAR(256) NOT NULL REFERENCES dmc_colors(id),
-                quantity INTEGER NOT NUll, 
+                quantity VARCHAR(256) NOT NUll, 
                 user_id INTEGER NOT NULL REFERENCES users(id)
             );
 
