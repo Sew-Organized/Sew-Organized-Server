@@ -6,7 +6,7 @@ run();
 async function run() {
 
     try {
-        await client.connect();
+        // await client.connect();
 
         await client.query(`
             INSERT INTO users (email, display_name, hash)
