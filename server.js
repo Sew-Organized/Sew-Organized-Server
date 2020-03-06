@@ -61,6 +61,26 @@ app.get('/api/colors', async(req, res) => {
     }
 });
 
+//get a single dmc color from database by id (from params)
+app.get('/api/detail/:id', async(req, res) => {
+    console.log(req.params);
+    try {
+        console.log(req.params.id);
+        const myQuery = `
+            SELECT * 
+            FROM dmc_colors
+            WHERE id = $1
+            `;
+
+        const colors = await client.query(myQuery, [req.params.id]);
+        res.json(colors.rows);
+        console.log('colors:', colors);
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
+
 //get user stash
 //'username is placeholder'
 app.get('/api/username/stash', async(req, res) => {
@@ -159,8 +179,7 @@ const getSchemeColors = async() => {
 };
 
 
-
-//get route from Color API schemes 
+//get route from Color API schemes for RANDOM scheme
 app.get('/api/scheme', async(req, res) => {
     try {
         const data = await getSchemeColors();
@@ -172,6 +191,39 @@ app.get('/api/scheme', async(req, res) => {
         console.error(err);
     }
 });
+
+const getClosestColors = async(req, res) => {
+    const hex = await client.query(`
+    SELECT hex FROM dmc_colors 
+    WHERE id = ${req.params.id}
+    RETURNING hex
+    `,);
+    const URL = `https://www.thecolorapi.com/scheme?hex=${hex}&mode=analogic-complement&count=5&format=json`;
+
+    const colorSchemeData = await request.get(URL);
+
+    return colorSchemeData.body.colors.map(color => {
+        return {
+            r: color.rgb.r,
+            g: color.rgb.g,
+            b: color.rgb.b
+        };
+    });
+};
+
+//get route from Color API schemes for SPECIFIC scheme based on current color
+app.get('/api/scheme/:id', async(req, res) => {
+    try {
+        const data = await getClosestColors();
+        
+        res.json(data);
+        console.log(data);
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
+
 
 //get route for palettes
 app.get('/api/username/palettes', async(req, res) => {
