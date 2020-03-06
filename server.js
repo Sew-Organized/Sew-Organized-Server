@@ -194,11 +194,11 @@ app.get('/api/scheme', async(req, res) => {
 const getClosestColors = async(req) => {
     const hex = await client.query(`
     SELECT hex FROM dmc_colors
-    WHERE id = $1;
+    WHERE id = $1
     `,
     [req.params.id]);
 
-    const URL = `https://www.thecolorapi.com/scheme?hex=${hex}&mode=monochrome&count=5&format=json`;
+    const URL = `https://www.thecolorapi.com/scheme?hex=${hex.rows[0].hex}&mode=monochrome&count=5&format=json`;
 
     const colorSchemeData = await request.get(URL);
 
