@@ -193,10 +193,10 @@ app.get('/api/scheme', async(req, res) => {
 
 const getClosestColors = async(req) => {
     const hex = await client.query(`
-    SELECT hex FROM dmc_colors 
-    WHERE id = ${req.params.id}
-    RETURNING hex
-    `,);
+    SELECT hex FROM dmc_colors
+    WHERE id = $1;
+    `,
+    [req.params.id]);
 
     const URL = `https://www.thecolorapi.com/scheme?hex=${hex}&mode=analogic-complement&count=5&format=json`;
 
