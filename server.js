@@ -198,7 +198,7 @@ const getClosestColors = async(req) => {
     `,
     [req.params.id]);
 
-    const URL = `https://www.thecolorapi.com/scheme?hex=${hex}&mode=analogic-complement&count=5&format=json`;
+    const URL = `https://www.thecolorapi.com/scheme?hex=${hex}&mode=monochrome&count=5&format=json`;
 
     const colorSchemeData = await request.get(URL);
 
