@@ -178,7 +178,6 @@ const getSchemeColors = async() => {
     });
 };
 
-
 //get route from Color API schemes for RANDOM scheme
 app.get('/api/scheme', async(req, res) => {
     try {
@@ -192,12 +191,13 @@ app.get('/api/scheme', async(req, res) => {
     }
 });
 
-const getClosestColors = async(req, res) => {
+const getClosestColors = async(req) => {
     const hex = await client.query(`
     SELECT hex FROM dmc_colors 
     WHERE id = ${req.params.id}
     RETURNING hex
     `,);
+
     const URL = `https://www.thecolorapi.com/scheme?hex=${hex}&mode=analogic-complement&count=5&format=json`;
 
     const colorSchemeData = await request.get(URL);
@@ -214,7 +214,7 @@ const getClosestColors = async(req, res) => {
 //get route from Color API schemes for SPECIFIC scheme based on current color
 app.get('/api/scheme/:id', async(req, res) => {
     try {
-        const data = await getClosestColors();
+        const data = await getClosestColors(req);
         
         res.json(data);
         console.log(data);
