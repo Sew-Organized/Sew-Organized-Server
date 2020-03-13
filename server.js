@@ -91,7 +91,7 @@ app.get('/api/colors/search', async(req, res) => {
             WHERE id = $1
             `;
         const colors = await client.query(myQuery, [req.query.id]);
-        res.json(colors.rows[0]);
+        res.json(colors.rows);
         console.log('colors:', colors);
     }
     catch (err) {
