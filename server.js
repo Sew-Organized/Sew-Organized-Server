@@ -81,6 +81,24 @@ app.get('/api/detail/:id', async(req, res) => {
     }
 });
 
+//get a single dmc color from database by id (from search query)
+app.get('/api/colors/search', async(req, res) => {
+    console.log(req.query.id);
+    try {
+        const myQuery = `
+            SELECT * 
+            FROM dmc_colors
+            WHERE id = $1
+            `;
+        const colors = await client.query(myQuery, [req.query.id]);
+        res.json(colors.rows[0]);
+        console.log('colors:', colors);
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
+
 //get user stash
 //'username is placeholder'
 app.get('/api/username/stash', async(req, res) => {
