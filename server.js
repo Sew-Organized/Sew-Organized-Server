@@ -83,7 +83,6 @@ app.get('/api/detail/:id', async(req, res) => {
 
 //get a single dmc color from database by id (from search query)
 app.get('/api/colors/search', async(req, res) => {
-    console.log(req.query.id);
     try {
         const myQuery = `
             SELECT * 
@@ -92,7 +91,22 @@ app.get('/api/colors/search', async(req, res) => {
             `;
         const colors = await client.query(myQuery, [req.query.id]);
         res.json(colors.rows);
-        console.log('colors:', colors);
+    }
+    catch (err) {
+        console.error(err);
+    }
+});
+
+// get colors from database by text input (from search query)
+app.get('/api/colors/namesearch', async(req, res) => {
+    try {
+        const myQuery = `
+            SELECT * 
+            FROM dmc_colors
+            WHERE description ILIKE '%${req.query.name}%'
+            `;
+        const colors = await client.query(myQuery);
+        res.json(colors.rows);
     }
     catch (err) {
         console.error(err);
