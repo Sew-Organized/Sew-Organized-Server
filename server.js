@@ -202,11 +202,7 @@ const getSchemeColors = async() => {
     const colorSchemeData = await request.get(URL);
 
     return colorSchemeData.body.colors.map(color => {
-        return {
-            r: color.rgb.r,
-            g: color.rgb.g,
-            b: color.rgb.b
-        };
+        return color.rgb;
     });
 };
 
@@ -235,11 +231,7 @@ const getClosestColors = async(req) => {
     const colorSchemeData = await request.get(URL);
 
     return colorSchemeData.body.colors.map(color => {
-        return {
-            r: color.rgb.r,
-            g: color.rgb.g,
-            b: color.rgb.b
-        };
+        return color.rgb;
     });
 };
 
